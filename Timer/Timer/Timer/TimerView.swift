@@ -1,10 +1,3 @@
-//
-//  TimerView.swift
-//  Timer
-//
-//  Created by user on 04/11/24.
-//
-
 import SwiftUI
 
 struct TimerView: View {
@@ -12,121 +5,162 @@ struct TimerView: View {
     @State private var selectedHours: Int = 0
     @State private var selectedMinutes: Int = 0
     @State private var selectedSeconds: Int = 0
-    
-    // Estado para animações de botão
     @State private var isPressed = false
 
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
+    
     var body: some View {
-        ZStack {
-            Color.black.ignoresSafeArea()
-
-            VStack {
+        GeometryReader { geometry in
+            ZStack {
+                Color.black.ignoresSafeArea()
                 
-
-                Circle()
-                    .trim(from: 0, to: CGFloat(timerModel.timeRemaining) / CGFloat(timerModel.totalTime))
-                    .stroke(timerColor(), lineWidth: 10)
-                    .rotationEffect(.degrees(-90))
-                    .animation(.easeInOut(duration: 0.1), value: timerModel.timeRemaining)
-                    .frame(width: 270, height: 270)
-
-                Text(timerModel.timeString)
-                    .font(.system(size: 48)) // Aumenta o tamanho do texto
-                    .foregroundColor(.white)
-                    .padding(.bottom, 20) // Adiciona espaço abaixo do texto
-
-                HStack {
-                    Picker("Horas", selection: $selectedHours) {
-                        ForEach(0..<24) { hour in
-                            Text("\(hour)").tag(hour)
+                VStack {
+                    HStack {
+                        Circle()
+                            .trim(from: 0, to: CGFloat(timerModel.timeRemaining) / CGFloat(timerModel.totalTime))
+                            .stroke(timerColor(), lineWidth: 10)
+                            .rotationEffect(.degrees(-90))
+                            .animation(.easeInOut(duration: 0.1), value: timerModel.timeRemaining)
+                            .frame(width: min(geometry.size.width, geometry.size.height) * 0.6, height: min(geometry.size.width, geometry.size.height) * 0.6)
+                        
+                        if geometry.size.width > geometry.size.height {
+                            
+                            VStack {
+                                buttonSection
+                            }
+                            .frame(maxHeight: .infinity)
+                            .padding(.leading, 20)
                         }
                     }
-                    .pickerStyle(MenuPickerStyle())
-                    .frame(width: 80)
-
-                    Picker("Minutos", selection: $selectedMinutes) {
-                        ForEach(0..<60) { minute in
-                            Text("\(minute)").tag(minute)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    
+                    // Exibição do tempo
+                    Text(timerModel.timeString)
+                        .font(.system(size: min(geometry.size.width, geometry.size.height) * 0.15))
+                        .foregroundColor(.white)
+                        .padding(.bottom, 10)
+                    
+                    // Exibição dos Pickers de Hora, Minuto e Segundo
+                    if geometry.size.width > geometry.size.height {
+                        HStack {
+                            timePickerSection
                         }
-                    }
-                    .pickerStyle(MenuPickerStyle())
-                    .frame(width: 80)
-
-                    Picker("Segundos", selection: $selectedSeconds) {
-                        ForEach(0..<60) { second in
-                            Text("\(second)").tag(second)
+                        .frame(maxWidth: .infinity)
+                        .padding(.bottom, 30)
+                    } else {
+                        VStack {
+                            timePickerSection
                         }
+                        .frame(maxWidth: .infinity)
                     }
-                    .pickerStyle(MenuPickerStyle())
-                    .frame(width: 80)
+                    
+                    if geometry.size.width <= geometry.size.height {
+                        
+                        buttonSection
+                            .padding(.top, 20)
+                    }
                 }
                 .padding()
+            }
+        }
+    }
 
-                HStack {
-                    Button(action: {
-                        let totalTime = (selectedHours * 3600) + (selectedMinutes * 60) + selectedSeconds
-                        timerModel.setTime(time: totalTime)
-                    }) {
-                        Text("Definir Tempo")
-                            .padding()
-                            .background(isPressed ? Color.gray : Color.blue)
-                            .foregroundColor(.white)
-                            .cornerRadius(8)
-                            .scaleEffect(isPressed ? 0.95 : 1.0)
-                            .animation(.easeInOut, value: isPressed)
-                    }
-                    .simultaneousGesture(DragGesture(minimumDistance: 0)
-                        .onChanged { _ in
-                            isPressed = true
-                        }
-                        .onEnded { _ in
-                            isPressed = false
-                        })
-
-                    Button(action: {
-                        timerModel.startTimer()
-                    }) {
-                        Text("Iniciar")
-                            .padding()
-                            .background(isPressed ? Color.gray : Color.blue)
-                            .foregroundColor(.white)
-                            .cornerRadius(8)
-                            .scaleEffect(isPressed ? 0.95 : 1.0)
-                            .animation(.easeInOut, value: isPressed)
-                    }
-                    .simultaneousGesture(DragGesture(minimumDistance: 0)
-                        .onChanged { _ in
-                            isPressed = true
-                        }
-                        .onEnded { _ in
-                            isPressed = false
-                        })
-
-                    Button(action: {
-                        timerModel.stopTimer()
-                    }) {
-                        Text("Parar")
-                            .padding()
-                            .background(isPressed ? Color.gray : Color.red)
-                            .foregroundColor(.white)
-                            .cornerRadius(8)
-                            .scaleEffect(isPressed ? 0.95 : 1.0)
-                            .animation(.easeInOut, value: isPressed)
-                    }
-                    .simultaneousGesture(DragGesture(minimumDistance: 0)
-                        .onChanged { _ in
-                            isPressed = true
-                        }
-                        .onEnded { _ in
-                            isPressed = false
-                        })
+    // Pickers 
+    private var timePickerSection: some View {
+        HStack {
+            Picker("Horas", selection: $selectedHours) {
+                ForEach(0..<24) { hour in
+                    Text("\(hour)").tag(hour)
                 }
             }
+            .pickerStyle(MenuPickerStyle())
+            .frame(width: 80)
+            
+            Picker("Minutos", selection: $selectedMinutes) {
+                ForEach(0..<60) { minute in
+                    Text("\(minute)").tag(minute)
+                }
+            }
+            .pickerStyle(MenuPickerStyle())
+            .frame(width: 80)
+            
+            Picker("Segundos", selection: $selectedSeconds) {
+                ForEach(0..<60) { second in
+                    Text("\(second)").tag(second)
+                }
+            }
+            .pickerStyle(MenuPickerStyle())
+            .frame(width: 80)
         }
         .padding()
     }
 
-    // Função para determinar a cor do círculo
+    private var buttonSection: some View {
+        VStack {
+            Button(action: {
+                let totalTime = (selectedHours * 3600) + (selectedMinutes * 60) + selectedSeconds
+                timerModel.setTime(time: totalTime)
+            }) {
+                Text("Definir Tempo")
+                    .padding()
+                    .background(isPressed ? Color.gray : Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(8)
+                    .scaleEffect(isPressed ? 0.95 : 1.0)
+                    .animation(.easeInOut, value: isPressed)
+            }
+            .simultaneousGesture(DragGesture(minimumDistance: 0)
+                .onChanged { _ in
+                    isPressed = true
+                }
+                .onEnded { _ in
+                    isPressed = false
+                })
+            
+            Button(action: {
+                timerModel.startTimer()
+            }) {
+                Text("Iniciar")
+                    .padding()
+                    .background(isPressed ? Color.gray : Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(8)
+                    .scaleEffect(isPressed ? 0.95 : 1.0)
+                    .animation(.easeInOut, value: isPressed)
+            }
+            .simultaneousGesture(DragGesture(minimumDistance: 0)
+                .onChanged { _ in
+                    isPressed = true
+                }
+                .onEnded { _ in
+                    isPressed = false
+                })
+            .disabled(timerModel.isTimerRunning || timerModel.timeRemaining == 0) // Desabilita se o timer estiver rodando ou o tempo for 0
+
+            Button(action: {
+                timerModel.stopTimer()
+            }) {
+                Text("Parar")
+                    .padding()
+                    .background(isPressed ? Color.gray : Color.red)
+                    .foregroundColor(.white)
+                    .cornerRadius(8)
+                    .scaleEffect(isPressed ? 0.95 : 1.0)
+                    .animation(.easeInOut, value: isPressed)
+            }
+            .simultaneousGesture(DragGesture(minimumDistance: 0)
+                .onChanged { _ in
+                    isPressed = true
+                }
+                .onEnded { _ in
+                    isPressed = false
+                })
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    // Coloração do círculo do timer
     private func timerColor() -> Color {
         if timerModel.timeRemaining <= 10 {
             return Color.red
@@ -137,4 +171,3 @@ struct TimerView: View {
         }
     }
 }
-

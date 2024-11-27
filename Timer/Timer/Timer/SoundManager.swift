@@ -1,56 +1,62 @@
-//
-//  SoundManager.swift
-//  Timer
-//
-//  Created by user on 04/11/24.
-//
-
 import AVFoundation
 
-class SoundManager {
+class SoundManager: NSObject {  // Herança de NSObject
     var audioPlayer: AVAudioPlayer?
     var soundNames: [String] = []
     let defaultSoundName = "default_sound.mp3" // Nome do som padrão
 
-    init() {
+    override init() {
+        super.init()
         loadSoundNames()
     }
 
     private func loadSoundNames() {
-        let fileManager = FileManager.default
-        let audioPath = Bundle.main.resourcePath! + "/Audios"
+        guard let audioPath = Bundle.main.path(forResource: "Audios", ofType: "") else {
+            print("Error loading audio path.")
+            return
+        }
 
         do {
-            let files = try fileManager.contentsOfDirectory(atPath: audioPath)
-            soundNames = files.filter { $0.hasSuffix(".mp3") || $0.hasSuffix(".wav") } // Filtra apenas arquivos de áudio
+            let files = try FileManager.default.contentsOfDirectory(atPath: audioPath)
+            soundNames = files.filter { $0.hasSuffix(".mp3") || $0.hasSuffix(".wav") }
         } catch {
             print("Error loading audio files: \(error.localizedDescription)")
         }
     }
 
     func playSound(named soundName: String) {
-        guard let url = Bundle.main.url(forResource: "Audios/\(soundName)", withExtension: nil) else {
-            // Toca o som padrão se o som não for encontrado
-            playDefaultSound()
+        // Ver se já existe um player tocando 
+        if let player = audioPlayer, player.isPlaying {
+            player.stop() 
+        }
+        
+        // Busca o URL do arquivo de áudio
+        guard let url = Bundle.main.url(forResource: soundName, withExtension: nil, subdirectory: "Audios") else {
+            print("Audio file not found, playing default sound.")
+            playDefaultSound()  // Toca o som padrão em caso de erro
             return
         }
 
         do {
+            // Inicializa o player de áudio
             audioPlayer = try AVAudioPlayer(contentsOf: url)
+            audioPlayer?.delegate = self  // delegate pra responder a eventos
             audioPlayer?.play()
         } catch {
             print("Error playing sound: \(error.localizedDescription)")
-            // Toca o som padrão se ocorrer um erro
-            playDefaultSound()
+            playDefaultSound()  // Toca o som padrão em caso de erro
         }
     }
 
     func getRandomSoundName() -> String {
-        return soundNames.randomElement() ?? defaultSoundName // Retorna um nome aleatório ou o padrão
+        return soundNames.randomElement() ?? defaultSoundName
     }
 
     private func playDefaultSound() {
-        guard let url = Bundle.main.url(forResource: "Audios/\(defaultSoundName)", withExtension: nil) else { return }
+        guard let url = Bundle.main.url(forResource: defaultSoundName, withExtension: nil, subdirectory: "Audios") else {
+            print("Default sound not found.")
+            return
+        }
         do {
             audioPlayer = try AVAudioPlayer(contentsOf: url)
             audioPlayer?.play()
@@ -60,3 +66,9 @@ class SoundManager {
     }
 }
 
+extension SoundManager: AVAudioPlayerDelegate {
+    // Reset do player após a reprodução do áudio
+    func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+        audioPlayer = nil
+    }
+}

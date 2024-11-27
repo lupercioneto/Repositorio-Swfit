@@ -13,7 +13,7 @@
 		CED840902CD941AF00D0DDB8 /* TimerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED8408F2CD941AF00D0DDB8 /* TimerView.swift */; };
 		CED840922CD941C800D0DDB8 /* TimerModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED840912CD941C800D0DDB8 /* TimerModel.swift */; };
 		CED840942CD941F400D0DDB8 /* SoundManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED840932CD941F400D0DDB8 /* SoundManager.swift */; };
-		CED840972CD9465E00D0DDB8 /* Audios in Resources */ = {isa = PBXBuildFile; fileRef = CED840962CD9465E00D0DDB8 /* Audios */; };
+		CED8409A2CEBC67F00D0DDB8 /* Audios in Resources */ = {isa = PBXBuildFile; fileRef = CED840962CD9465E00D0DDB8 /* Audios */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -134,9 +134,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CED8409A2CEBC67F00D0DDB8 /* Audios in Resources */,
 				CED840892CD9414800D0DDB8 /* Preview Assets.xcassets in Resources */,
 				CED840862CD9414800D0DDB8 /* Assets.xcassets in Resources */,
-				CED840972CD9465E00D0DDB8 /* Audios in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -1,17 +1,15 @@
-//
-//  TimerModel.swift
-//  Timer
-//
-//  Created by user on 04/11/24.
-//
-
 import Foundation
 
 class TimerModel: ObservableObject {
-    @Published var timeRemaining: Int = 60 // tempo em segundos
-    var totalTime: Int = 60 // Defina o tempo máximo aqui
-    private var timer: Timer?
+    @Published var timeRemaining: Int = 60
+    var totalTime: Int = 60
+    private var timer: Timer?  // timer privado
     private let soundManager = SoundManager()
+
+    // Get pra verificar se o timer está rodando
+    var isTimerRunning: Bool {
+        return timer != nil
+    }
 
     var timeString: String {
         let hours = timeRemaining / 3600
@@ -26,19 +24,32 @@ class TimerModel: ObservableObject {
     }
 
     func startTimer() {
-        timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
-            if self.timeRemaining > 0 {
-                self.timeRemaining -= 1
-            } else {
-                self.timer?.invalidate()
-                let randomSound = self.soundManager.getRandomSoundName()
-                self.soundManager.playSound(named: randomSound) // Toca um som aleatório
+        if !isTimerRunning {
+            // Se o tempo estiver zerado, reinicia
+            if timeRemaining == 0 {
+                timeRemaining = totalTime
+            }
+
+            // Inicia o timer
+            timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
+                DispatchQueue.main.async {
+                    if self.timeRemaining > 0 {
+                        self.timeRemaining -= 1
+                    } else {
+                        // Quando o tempo se esgota
+                        self.timer?.invalidate()  // Para o timer
+                        self.timer = nil  // Desassocia o timer
+                        let randomSound = self.soundManager.getRandomSoundName()
+                        self.soundManager.playSound(named: randomSound)  // Toca o som
+                    }
+                }
             }
         }
     }
 
     func stopTimer() {
+        // Para o timer se ele estiver rodando
         timer?.invalidate()
+        timer = nil
     }
 }
-
